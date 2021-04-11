@@ -1,0 +1,4 @@
+com/community/community_board/CommunityBoardApplication.java
+ com.community.community_board.CommunityBoardApplication
+com/community/community_board/configuration/DBConfiguration.java
+ com.community.community_board.configuration.DBConfiguration

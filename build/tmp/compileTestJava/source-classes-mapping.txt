@@ -1,0 +1,2 @@
+com/community/community_board/CommunityBoardApplicationTests.java
+ com.community.community_board.BoardApplicationTests
