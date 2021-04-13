@@ -3,10 +3,12 @@
 <body th:fragment="main-body">
 <div class="fixed-navbar">
     <div class="pull-left">
-        <h1 class="page-title">SourceSharingSite</h1>
+        <a th:href="@{/board/list.do}" class="page-title">SourceSharing</a>
     </div>
 </div>
 <!-- /.fixed-navbar -->
+
+<th:block layout:fragment = "modal"></th:block>
 
 <div id="wrapper">
     <div class="main-content">
@@ -47,6 +49,7 @@
 <script th:src="@{/scripts/jquery.min.js}"></script>
 <script th:src="@{/plugin/bootstrap/js/bootstrap.min.js}"></script>
 <script th:src="@{/plugin/mCustomScrollbar/jquery.mCustomScrollbar.concat.min.js}"></script>
+<script th:src="@{/plugin/common/moment.js}"></script>
 
 <script th:src="@{/scripts/main.js}"></script>
 <script th:src="@{/scripts/common.js}"></script>

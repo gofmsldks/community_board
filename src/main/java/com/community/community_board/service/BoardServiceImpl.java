@@ -1,83 +1,133 @@
 package com.community.community_board.service;
 
+import com.community.community_board.domain.AttachDTO;
 import com.community.community_board.domain.BoardDTO;
+import com.community.community_board.mapper.AttachMapper;
 import com.community.community_board.mapper.BoardMapper;
+import com.community.community_board.paging.Criteria;
+import com.community.community_board.paging.PaginationInfo;
+import com.community.community_board.util.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
 
+
+/**
+ * idx가 null이면 insertBoard 사용해서 정상적으로 들어가면 true 저장, int queryResult니까 1로 저장 됨.
+ * idx가 있으면 updateBoard를 해줘야 하므로, updateBoard 실행, 마찬가지로 성공하면 true(1) 저장
+ * query result 가 존재하면 true 를 반환하고 성공적으로 완료됐다고 알려줌.
+ *
+ * @param
+ * @return
+ */
 @Service
 public class BoardServiceImpl implements BoardService {
 
     @Autowired
     private BoardMapper boardMapper;
-    /**
-     * idx가 null이면 insertBoard 사용해서 정상적으로 들어가면 true 저장, int queryResult니까 1로 저장 됨.
-     * idx가 있으면 updateBoard를 해줘야 하므로, updateBoard 실행, 마찬가지로 성공하면 true(1) 저장
-     * query result 가 존재하면 true 를 반환하고 성공적으로 완료됐다고 알려줌.
-     *  @param params
-     * @return
-     */
+
+    @Autowired
+    private AttachMapper attachMapper;
+
+    @Autowired
+    private FileUtils fileUtils;
+
     @Override
     public boolean registerBoard(BoardDTO params) {
+
         int queryResult = 0;
 
-        if(params.getIdx() == null){
+        if (params.getIdx() == null) {
             queryResult = boardMapper.insertBoard(params);
-        }else {
+        } else {
             queryResult = boardMapper.updateBoard(params);
+
+            // 파일이 추가, 삭제, 변경된 경우
+            if ("Y".equals(params.getChangeYn())) {
+                attachMapper.deleteAttach(params.getIdx());
+
+                // fileIdxs에 포함된 idx를 가지는 파일의 삭제여부를 'N'으로 업데이트
+                if (CollectionUtils.isEmpty(params.getFileIdxs()) == false) {
+                    attachMapper.undeleteAttach(params.getFileIdxs());
+                }
+            }
         }
-        return (queryResult == 1 ) ? true: false;
+
+        return (queryResult > 0);
     }
 
-    /**
-     * 게시글의 자세한 내용을 보는 부분
-     *
-     * @param idx
-     * @return
-     */
+    @Override
+    public boolean registerBoard(BoardDTO params, MultipartFile[] files) {
+        int queryResult = 1;
+
+        if (registerBoard(params) == false) {
+            return false;
+        }
+
+        List<AttachDTO> fileList = fileUtils.uploadFiles(files, params.getIdx());
+        if (CollectionUtils.isEmpty(fileList) == false) {
+            queryResult = attachMapper.insertAttach(fileList);
+            if (queryResult < 1) {
+                queryResult = 0;
+            }
+        }
+
+        return (queryResult > 0);
+    }
+
+
     @Override
     public BoardDTO getBoardDetail(Long idx) {
         return boardMapper.selectBoardDetail(idx);
     }
 
-    /**
-     * 해당 idx를 가진 부분을 selectBoardDetail(idx)로 반환하고
-     * 그것을 board에 저장해서 DeleteYn 부분을 Y로 만들어줌.
-     * @param idx
-     * @return
-     */
     @Override
     public boolean deleteBoard(Long idx) {
         int queryResult = 0;
+
         BoardDTO board = boardMapper.selectBoardDetail(idx);
 
-        if(board != null && "N".equals(board.getDeleteYn())){
+        if (board != null && "N".equals(board.getDeleteYn())) {
             queryResult = boardMapper.deleteBoard(idx);
         }
 
-        return (queryResult == 1) ? true: false;
+        return (queryResult == 1) ? true : false;
     }
 
-    /**
-     * 비어있는 리스트를 선언한후에 게시물 수가 0 초과이면 모든 BoardList들을 리스트에 저장해줌
-     * 리스트는 BoardDTO 형식으로 선언 되어있으므로 넣어주면 됨.
-     * @return
-     */
     @Override
-    public List<BoardDTO> getBoardList() {
+    public List<BoardDTO> getBoardList(BoardDTO params) {
         List<BoardDTO> boardList = Collections.emptyList();
 
+        int boardTotalCount = boardMapper.selectBoardTotalCount(params);
 
-        int boardTotalCount = boardMapper.selectBoardTotalCount();
+        PaginationInfo paginationInfo = new PaginationInfo(params);
+        paginationInfo.setTotalRecordCount(boardTotalCount);
+
+        params.setPaginationInfo(paginationInfo);
+
         if (boardTotalCount > 0) {
-            boardList = boardMapper.selectBoardList();
+            boardList = boardMapper.selectBoardList(params);
         }
 
         return boardList;
     }
 
+    @Override
+    public List<AttachDTO> getAttachFileList(Long boardIdx) {
+
+        int fileTotalCount = attachMapper.selectAttachTotalCount(boardIdx);
+        if (fileTotalCount < 1) {
+            return Collections.emptyList();
+        }
+        return attachMapper.selectAttachList(boardIdx);
+    }
+
+    @Override
+    public AttachDTO getAttachDetail(Long idx) {
+        return attachMapper.selectAttachDetail(idx);
+    }
 }

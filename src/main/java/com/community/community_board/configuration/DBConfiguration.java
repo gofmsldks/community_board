@@ -15,7 +15,11 @@ import org.springframework.context.annotation.PropertySource;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+@EnableTransactionManagement
 @Configuration
 @PropertySource("classpath:/application.properties")
 
@@ -46,8 +50,8 @@ public class DBConfiguration {
     public SqlSessionFactory sqlSessionFactory() throws Exception {
         SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource());
-        factoryBean.setMapperLocations(applicationContext.getResources("classpath:/mappers/**/BoardMapper.xml"));
-        factoryBean.setTypeAliasesPackage("com.community.community_board.domain");
+        factoryBean.setMapperLocations(applicationContext.getResources("classpath:/mappers/**/*Mapper.xml"));
+        factoryBean.setTypeAliasesPackage("com.community.community_board.*");
         factoryBean.setConfiguration(mybatisConfg());
 
         return factoryBean.getObject();
@@ -86,5 +90,9 @@ public class DBConfiguration {
         //mybatisConfig: application.properties에서 mybatis.configuration으로 시작하는 모든 설정을 읽어 들여 빈(Bean)으로 등록
     }
 
+    @Bean
+    public PlatformTransactionManager transactionManager() {
+        return new DataSourceTransactionManager(dataSource());
+    }
 }
 
