@@ -14,3 +14,6 @@ public class CommunityBoardApplication {
 		}
 	}
 }
+
+//mysql 구동 명령어(터미널)
+//brew services start mysql
