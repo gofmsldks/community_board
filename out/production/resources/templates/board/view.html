@@ -153,12 +153,16 @@
 				var uri = /*[[ @{/comments} ]]*/;
 				var headers = {"Content-Type": "application/json", "X-HTTP-Method-Override": "POST"};
 				var params = {"boardIdx": boardIdx, "content": content.value, "writer": "관리자"};
-
+                var token = $("meta[name='_csrf']").attr("content");
+                var header = $("meta[name='_csrf_header']").attr("content");
 				$.ajax({
 					url: uri,
 					type: "POST",
 					headers: headers,
 					dataType: "json",
+					beforeSend : function(xhr){
+		                xhr.setRequestHeader(header, token);
+	                },
 					data: JSON.stringify(params),
 					success: function(response) {
 						if (response.result == false) {
@@ -181,6 +185,8 @@
 
 				var writer = document.getElementById("modalWriter");
 				var content = document.getElementById("modalContent");
+                var token = $("meta[name='_csrf']").attr("content");
+                var header = $("meta[name='_csrf_header']").attr("content");
 
 				var uri = [[ @{/comments/} ]] + idx;
 				var headers = {"Content-Type": "application/json", "X-HTTP-Method-Override": "PATCH"};
@@ -191,6 +197,9 @@
 					type: "PATCH",
 					headers: headers,
 					dataType: "json",
+					beforeSend : function(xhr){
+		                xhr.setRequestHeader(header, token);
+	                },
 					data: JSON.stringify(params),
 					success: function(response) {
 						if (response.result == false) {
@@ -217,12 +226,17 @@
 
 				var uri = [[ @{/comments/} ]] + idx;
 				var headers = {"Content-Type": "application/json", "X-HTTP-Method-Override": "DELETE"};
+                var token = $("meta[name='_csrf']").attr("content");
+                var header = $("meta[name='_csrf_header']").attr("content");
 
 				$.ajax({
 					url: uri,
 					type: "DELETE",
 					headers: headers,
 					dataType: "json",
+					beforeSend : function(xhr){
+		                xhr.setRequestHeader(header, token);
+	                },
 					success: function(response) {
 						if (response.result == false) {
 							alert("댓글 삭제에 실패하였습니다.");
@@ -265,26 +279,36 @@
 			/*[- end of function -]*/
 
 			function deleteBoard(idx, queryString) {
+                var token = $("meta[name='_csrf']").attr("content");
+                var header = $("meta[name='_csrf_header']").attr("content");
 
 				if (confirm(idx + "번 게시글을 삭제할까요?")) {
-					var uri = /*[[ @{/board/delete.do} ]]*/;
-					var html = "";
 
-					html += '<form name="dataForm" action="'+uri+'" method="post">';
-					html += '<input type="hidden" name="idx" value="'+idx+'" />';
+				     var newForm = document.createElement("form");
+                     newForm.setAttribute("charset", "UTF-8");
+                     newForm.setAttribute("method", "post");
+                     newForm.setAttribute("action", "/board/delete.do");
+                     newForm.setAttribute("name", "dataForm");
+
+                     var data1 = document.createElement("input");
+                      data1.setAttribute("type", "hidden");
+                      data1.setAttribute("name", '+token+');
+                      data1.setAttribute("value", '+header+');
+                      newForm.appendChild(data1);
 
 					/*[- 쿼리 스트링을 오브젝트 형태로 변환 -]*/
 					queryString = new URLSearchParams(queryString);
 					queryString.forEach(function(value, key) {
 						if (isEmpty(value) == false) {
-							html += '<input type="hidden" name="' + key + '" value="' + value + '" />';
+						    var data2 = document.createElement("input");
+                            data2.setAttribute("type", "hidden");
+                            data2.setAttribute("name", "' + key + '");
+                            data2.setAttribute("value", "' + value + '");
+                            newForm.appendChild(data2);
 						}
 					});
-
-					html += '</form>';
-
-					$("body").append(html);
-					document.dataForm.submit();
+					document.body.appendChild(newForm);
+                    newForm.submit();
 				}
 			}
 			/*[- end of function -]*/

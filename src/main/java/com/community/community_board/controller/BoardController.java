@@ -11,10 +11,7 @@ package com.community.community_board.controller;
         import org.springframework.dao.DataAccessException;
         import org.springframework.stereotype.Controller;
         import org.springframework.ui.Model;
-        import org.springframework.web.bind.annotation.GetMapping;
-        import org.springframework.web.bind.annotation.ModelAttribute;
-        import org.springframework.web.bind.annotation.PostMapping;
-        import org.springframework.web.bind.annotation.RequestParam;
+        import org.springframework.web.bind.annotation.*;
         import org.springframework.web.multipart.MultipartFile;
 
         import javax.servlet.http.HttpServletResponse;
@@ -54,8 +51,8 @@ public class BoardController extends UiUtils {
     }
 
 
-
-    @PostMapping(value = "/board/register.do")
+    @RequestMapping(value = "/board/register.do", method = {RequestMethod.GET,RequestMethod.POST})
+    //@PostMapping(value = "/board/register.do")
     public String registerBoard(final BoardDTO params, final MultipartFile[] files, Model model) {
         Map<String, Object> pagingParams = getPagingParams(params);
         try {
@@ -105,8 +102,8 @@ public class BoardController extends UiUtils {
 
 
 
-
-    @PostMapping(value = "/board/delete.do")
+    @RequestMapping(value = "/board/delete.do", method = {RequestMethod.GET,RequestMethod.POST})
+    // @PostMapping(value = "/board/delete.do")
     public String deleteBoard(@ModelAttribute("params") BoardDTO params, @RequestParam(value = "idx", required = false) Long idx, Model model) {
         if (idx == null) {
             return showMessageWithRedirect("올바르지 않은 접근입니다.", "/board/list.do", Method.GET, null, model);
@@ -127,7 +124,6 @@ public class BoardController extends UiUtils {
 
         return showMessageWithRedirect("게시글 삭제가 완료되었습니다.", "/board/list.do", Method.GET, pagingParams, model);
     }
-
 
 
     @GetMapping("/board/download.do")

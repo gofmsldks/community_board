@@ -1,9 +1,22 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.w3.org/1999/xhtml">
 <body th:fragment="main-body">
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+
 <div class="fixed-navbar">
     <div class="pull-left">
         <a th:href="@{/board/list.do}" class="page-title">SourceSharing</a>
+    </div>
+
+    <div class="pull-right">
+        <span sec:authentication="name" class="page-title"></span>님 환영합니다~
+        <a th:href="@{/user/logout/result.do}" class="logout">로그아웃 </a>
+        <a th:href="@{/user/info.do}" class="logout">마이페이지 </a>
+
+
     </div>
 </div>
 <!-- /.fixed-navbar -->
