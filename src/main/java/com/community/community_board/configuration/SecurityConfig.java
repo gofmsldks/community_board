@@ -46,14 +46,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
 
         http.authorizeRequests()
                 // 페이지 권한 설정, antMachers는 인증을 했을때 롤 부여 및 접근권한을 설정해주는 것.
-                .antMatchers("board/**").authenticated()
+
+
                 .antMatchers("/").permitAll()
                 .antMatchers("/user/login.do").permitAll()
-                .antMatchers("/user/signup.do").anonymous()
+                .antMatchers("/user/signup.do").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/user/myinfo.do").hasRole("MEMBER")
-                //.anyRequest().authenticated()
-                .antMatchers("/**").permitAll()
+                .anyRequest().authenticated()
+
 
                 .and() // 로그인 설정
                 .formLogin()
@@ -62,15 +63,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
 
 
 
-
                 .and() // 로그아웃 설정
                 .logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout.do"))
                 .logoutSuccessUrl("/user/logout/result.do")
                 .invalidateHttpSession(true)
+
+
                 .and()
                 // 403 예외처리 핸들링
                 .exceptionHandling().accessDeniedPage("/user/denied.do");
+
+
+
+
 
         //http
                 //.cors().disable()
